@@ -39,9 +39,9 @@ model Session {
 }
 
 model User {
-  id                       String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                       String     @id @default(auto()) @map("_id") @db.ObjectId
   name                     String?
-  email                    String?   @unique
+  email                    String?    @unique
   emailVerified            DateTime?
   image                    String?
   accounts                 Account[]
@@ -49,6 +49,16 @@ model User {
   stripe_customer_id       String?
   stripe_subscription_item String?
   api_key                  String?
+  EventLog                 EventLog[]
+}
+
+model EventLog {
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId  String   @db.ObjectId
+  method  String
+  status  Int
+  created DateTime @default(now())
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
