@@ -53,7 +53,8 @@ export async function GET(request: NextRequest) {
   });
 
   const data = randomUUID();
-  const logResult = await prisma.log.create({
+
+  const logResult = await prisma.eventLog.create({
     data: {
       userId: String(user?.id),
       status: 200,

@@ -2,6 +2,7 @@ import {
     createCheckoutLink,
     createCustomerIfNull,
     hasSubscription,
+    stripe,
 } from "@/lib/stripe";
 import Link from "next/link";
 import { authOptions } from "../api/auth/[...nextauth]/route";
@@ -25,8 +26,32 @@ export default async function Page() {
         },
     });
 
+    let current_usage = 0
 
-    // const top10RecentLogs = await prisma.log.createMany()
+    if (hasSub) {
+        const subscriptions = await stripe.subscriptions.list({
+            customer: String(user?.stripe_customer_id),
+        });
+
+        const invoice = await stripe.invoices.retrieveUpcoming({
+            subscription: subscriptions.data.at(0)?.id
+        })
+
+        current_usage = invoice.amount_due
+
+    }
+
+
+
+
+    const top10RecentLogs = await prisma.eventLog.findMany({
+        where: {
+            userId: user?.id
+        }, orderBy: {
+            created: "desc"
+        },
+        take: 10
+    })
 
     return (
         <main>
@@ -40,11 +65,35 @@ export default async function Page() {
 
                         <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
                             <p className="text-sm text-black px-6 py-4 font-medium">
+                                Current Usage
+                            </p>
+                            <p className="text-sm font-mono text-zinc-800 px-6 py-4">
+                                {current_usage / 2500}
+                            </p>
+                        </div>
+
+                        <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
+                            <p className="text-sm text-black px-6 py-4 font-medium">
                                 API Key
                             </p>
                             <p className="text-sm font-mono text-zinc-800 px-6 py-4">
                                 {user?.api_key}
                             </p>
+                        </div>
+
+                        <div className="divide-y divide-zinc-200 border border-zinc-200 rounded-md">
+                            <p className="text-sm text-black px-6 py-4 font-medium">
+                                LOG Events
+                            </p>
+
+                            {top10RecentLogs.map((item, index) => (
+                                <div key={index} className="flex items-center gap-4">
+                                    <p className="text-sm font-mono text-zinc-800 px-6 py-4"> {item.method}</p>
+                                    <p className="text-sm font-mono text-zinc-800 px-6 py-4"> {item.status}</p>
+                                    <p className="text-sm font-mono text-zinc-800 px-6 py-4"> {item.created.toDateString()}</p>
+                                </div>
+                            ))}
+
                         </div>
 
                     </div>
