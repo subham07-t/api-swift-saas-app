@@ -21,7 +21,7 @@ export function Header() {
                         href="/api/auth/signout"
                         className="font-medium text-sm text-white bg-black px-4 py-2 rounded-lg hover:opacity-90"
                     >
-                        Logout
+                        SignOut
                     </Link>
                 </div>
             </div>
